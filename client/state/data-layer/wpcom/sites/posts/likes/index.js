@@ -3,6 +3,7 @@
  *
  * @format
  */
+import { noop } from 'lodash';
 
 /**
  * Internal Dependencies
@@ -15,23 +16,27 @@ import { dispatchRequestEx } from 'state/data-layer/wpcom-http/utils';
 import { http } from 'state/data-layer/wpcom-http/actions';
 import { receiveLikes } from 'state/posts/likes/actions';
 
+export const fetch = action =>
+	http( {
+		method: 'GET',
+		path: `/sites/${ action.siteId }/posts/${ action.postId }/likes`,
+	} );
+
+export const fromApi = data => ( {
+	found: +data.found,
+	iLike: Boolean( data.i_like ),
+	likes: data.likes,
+} );
+
+export const onSuccess = ( { siteId, postId }, data ) => receiveLikes( siteId, postId, data );
+
 export default mergeHandlers( newLike, mine, {
 	[ POST_LIKES_REQUEST ]: [
 		dispatchRequestEx( {
-			fetch: action =>
-				http( {
-					method: 'GET',
-					path: `/sites/${ action.siteId }/posts/${ action.postId }/likes`,
-				} ),
-			fromApi: data => ( {
-				found: +data.found,
-				iLike: Boolean( data.i_like ),
-				likes: data.likes,
-			} ),
-			onSuccess: ( { siteId, postId }, data ) => receiveLikes( siteId, postId, data ),
-			onError: () => {
-				//console.log( err );
-			},
+			fetch,
+			fromApi,
+			onSuccess,
+			onError: noop,
 		} ),
 	],
 } );
