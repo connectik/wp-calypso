@@ -52,12 +52,15 @@ import { abtest } from 'lib/abtest';
 
 class PlanFeatures extends Component {
 	render() {
-		const { planProperties, isInSignup } = this.props;
+		const { planProperties, isInSignup, showModifiedPricingDisplay } = this.props;
 		const tableClasses = classNames(
 			'plan-features__table',
 			`has-${ planProperties.length }-cols`
 		);
-		const planClasses = classNames( 'plan-features', { 'plan-features--signup': isInSignup } );
+		const planClasses = classNames( 'plan-features', {
+			'plan-features--signup': isInSignup,
+			'abtest-pricing-display': showModifiedPricingDisplay,
+		} );
 		const planWrapperClasses = classNames( { 'plans-wrapper': isInSignup } );
 		let mobileView, planDescriptions;
 		let bottomButtons = null;
@@ -124,6 +127,7 @@ class PlanFeatures extends Component {
 			selectedPlan,
 			site,
 			translate,
+			showModifiedPricingDisplay,
 		} = this.props;
 
 		// move any free plan to last place in mobile view
@@ -170,7 +174,7 @@ class PlanFeatures extends Component {
 						planType={ planName }
 						rawPrice={ rawPrice }
 						discountPrice={ discountPrice }
-						billingTimeFrame={ planConstantObj.getBillingTimeFrame() }
+						billingTimeFrame={ planConstantObj.getBillingTimeFrame( abtest ) }
 						hideMonthly={ hideMonthly }
 						isPlaceholder={ isPlaceholder }
 						site={ site }
@@ -237,7 +241,7 @@ class PlanFeatures extends Component {
 			const { rawPrice, discountPrice } = properties;
 			const classes = classNames( 'plan-features__table-item', 'has-border-top' );
 			let audience = planConstantObj.getAudience();
-			let billingTimeFrame = planConstantObj.getBillingTimeFrame();
+			let billingTimeFrame = planConstantObj.getBillingTimeFrame( abtest );
 
 			if ( isInSignup && ! displayJetpackPlans ) {
 				switch ( siteType ) {
@@ -256,7 +260,7 @@ class PlanFeatures extends Component {
 			}
 
 			if ( isInSignup && displayJetpackPlans ) {
-				billingTimeFrame = planConstantObj.getSignupBillingTimeFrame();
+				billingTimeFrame = planConstantObj.getSignupBillingTimeFrame( abtest );
 			}
 
 			return (
@@ -521,6 +525,7 @@ export default connect(
 		const signupDependencies = getSignupDependencyStore( state );
 		const siteType = signupDependencies.designType;
 		const canPurchase = ! isPaid || isCurrentUserCurrentPlanOwner( state, selectedSiteId );
+		const showModifiedPricingDisplay = abtest( 'upgradePricingDisplay' ) === 'modified';
 		const planProperties = compact(
 			map( plans, plan => {
 				let isPlaceholder = false;
@@ -621,6 +626,7 @@ export default connect(
 			canPurchase,
 			planProperties,
 			siteType,
+			showModifiedPricingDisplay,
 		};
 	},
 	{

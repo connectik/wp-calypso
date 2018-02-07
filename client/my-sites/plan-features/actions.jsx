@@ -20,6 +20,7 @@ import { getSelectedSiteId } from 'state/ui/selectors';
 import { getPlanClass, isMonthly } from 'lib/plans/constants';
 import { planLevelsMatch } from 'lib/plans/index';
 import { recordTracksEvent } from 'state/analytics/actions';
+import { abtest } from 'lib/abtest';
 
 const PlanFeaturesActions = ( {
 	available = true,
@@ -40,6 +41,7 @@ const PlanFeaturesActions = ( {
 	selectedPlan,
 	recordTracksEvent: trackTracksEvent,
 	translate,
+	showModifiedPricingDisplay = false,
 } ) => {
 	let upgradeButton;
 
@@ -57,7 +59,9 @@ const PlanFeaturesActions = ( {
 	if ( current && ! isInSignup ) {
 		upgradeButton = (
 			<Button className={ classes } href={ manageHref } disabled={ ! manageHref }>
-				{ canPurchase ? translate( 'Manage Plan' ) : translate( 'View Plan' ) }
+				{ canPurchase
+					? showModifiedPricingDisplay ? 'Renew' : translate( 'Manage Plan' )
+					: translate( 'View Plan' ) }
 			</Button>
 		);
 	} else if ( available || isPlaceholder ) {
@@ -128,8 +132,10 @@ export default connect(
 		const { isInSignup } = ownProps;
 		const selectedSiteId = isInSignup ? null : getSelectedSiteId( state );
 		const currentSitePlan = getCurrentPlan( state, selectedSiteId );
+		const showModifiedPricingDisplay = abtest( 'upgradePricingDisplay' ) === 'modified';
 		return {
 			currentSitePlan,
+			showModifiedPricingDisplay,
 		};
 	},
 	{

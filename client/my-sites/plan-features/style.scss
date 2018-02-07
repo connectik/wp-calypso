@@ -536,3 +536,27 @@ $plan-features-sidebar-width: 272px;
 		border-bottom: solid 1px lighten( $gray, 27% );
 	}
 }
+
+/**
+ * A/B test for upgrade pricing display
+ */
+.abtest-pricing-display {
+	.plan-price {
+		font-size: 16px;
+		margin: 3px 0 3px;
+	}
+	.plan-price__currency-symbol {
+		font-size: inherit;
+		vertical-align: initial;
+		color: inherit;
+	}
+	.plan-price__fraction {
+		font-size: inherit;
+		vertical-align: initial;
+		font-weight: inherit;
+	}
+	.plan-features__header-timeframe {
+		font-style: normal;
+		color: $gray;
+	}
+}
